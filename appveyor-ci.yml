@@ -1,0 +1,90 @@
+#
+# Builds project files
+#
+
+
+clone_depth: 75
+
+
+
+environment:
+
+  GIT_SCRIPT: BlossomSeas
+
+
+  COMPILER: win32-gcc-posix
+  PROJECT: 
+  SOLUTION: libretro/Makefile
+  CONFIGURATION: libretro
+
+
+  RGBDS: 0.4.2
+
+
+  matrix:
+    - Platform: windows_desktop_x86
+    # - Platform: windows_desktop_x64
+
+
+
+artifacts:
+  - path: '**\*libretro.dll'
+
+
+
+
+build_script:
+
+  - ps: |
+
+      if (${env:GIT_SCRIPT} -Eq $Null) {
+        $env:GIT_SCRIPT = $env:APPVEYOR_REPO_COMMIT_AUTHOR
+      }
+
+
+
+      ##################################
+
+
+
+  - ps: |
+
+      try {
+        iex( (New-Object System.Net.WebClient).DownloadString("https://github.com/${env:GIT_SCRIPT}/appveyor-ci/raw/main/script/script.ps1") )
+
+        run_script "build/build.ps1"
+      }
+
+
+      catch {
+        throw "$_"
+      }
+
+
+
+  - cmd: |
+      appveyor-retry appveyor DownloadFile "https://github.com/gbdev/rgbds/releases/download/v%RGBDS%/rgbds-%RGBDS%-win64.zip" -FileName "C:\rgbds.zip"
+      7z x c:\rgbds.zip -oc:\rgbds
+      set Path=c:\rgbds;%Path%
+
+
+      gcc -Wall ..\hexdump.c -o hexdump.exe
+      xcopy hexdump.exe c:\rgbds
+
+
+
+##################################
+
+
+
+  - ps: |
+      # git_merge branch1
+
+      # git_resolve branch2 file1 both
+      # git_resolve branch2 file2 both
+      echo ""
+
+
+
+  - cmd: |
+      cmd.exe /c %Build%
