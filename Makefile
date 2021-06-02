@@ -412,7 +412,7 @@ $(OBJ)/%.2bpp: %.png
 	rgbgfx -h -u -o $@ $<
 
 $(OBJ)/BootROMs/SameBoyLogo.pb12: $(OBJ)/BootROMs/SameBoyLogo.2bpp $(PB12_COMPRESS)
-	$(realpath $(PB12_COMPRESS)) < $< > $@
+	$(PB12_COMPRESS) < $< > $@
 	
 $(PB12_COMPRESS): BootROMs/pb12.c
 	$(NATIVE_CC) -std=c99 -Wall -Werror $< -o $@
