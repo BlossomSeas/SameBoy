@@ -27,6 +27,7 @@ Start:
     ld a, $54
     ldh [$47], a
 
+IF !DEF(FAST)
 ; Load logo from ROM.
 ; A nibble represents a 4-pixels line, 2 bytes represent a 4x4 tile, scaled to 8x8.
 ; Tiles are ordered left to right, top to bottom.
@@ -68,6 +69,7 @@ Start:
     ld l,$0f ; Jump to top row
     jr .tilemapLoop
 .tilemapDone
+ENDC
 
     ld a, 30
     ldh [$ff42], a
@@ -76,9 +78,10 @@ Start:
     ld a, $91
     ldh [$40], a
 
+IF !DEF(FAST)
     ld d, (-119) & $FF
     ld c, 15
-    
+
 .animate
     call WaitFrame
     ld a, d
@@ -113,7 +116,8 @@ Start:
 ; Wait ~1 second
     ld b, 60
     call WaitBFrames
-    
+ENDC
+
 ; Set registers to match the original DMG boot
     ld hl, $01B0
     push hl
