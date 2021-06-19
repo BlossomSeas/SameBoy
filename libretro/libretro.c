@@ -1081,6 +1081,7 @@ void retro_run(void)
 
 
     initialized = true;
+    retro_osd_message_send();
 }
 
 bool retro_load_game(const struct retro_game_info *info)
