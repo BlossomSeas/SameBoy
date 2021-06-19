@@ -200,7 +200,7 @@ endif
 cocoa: $(BIN)/SameBoy.app
 quicklook: $(BIN)/SameBoy.qlgenerator
 sdl: $(SDL_TARGET) $(BIN)/SDL/dmg_boot.bin $(BIN)/SDL/cgb_boot.bin $(BIN)/SDL/agb_boot.bin $(BIN)/SDL/sgb_boot.bin $(BIN)/SDL/sgb2_boot.bin $(BIN)/SDL/LICENSE $(BIN)/SDL/registers.sym $(BIN)/SDL/background.bmp $(BIN)/SDL/Shaders
-bootroms: $(BIN)/BootROMs/agb_boot.bin $(BIN)/BootROMs/cgb_boot.bin $(BIN)/BootROMs/dmg_boot.bin $(BIN)/BootROMs/sgb_boot.bin $(BIN)/BootROMs/sgb2_boot.bin
+bootroms: $(BIN)/BootROMs/agb_boot.bin $(BIN)/BootROMs/cgb_boot.bin $(BIN)/BootROMs/dmg_boot.bin $(BIN)/BootROMs/sgb_boot.bin $(BIN)/BootROMs/sgb2_boot.bin $(BIN)/BootROMs/agb_fast_boot.bin $(BIN)/BootROMs/cgb_fast_boot.bin $(BIN)/BootROMs/dmg_fast_boot.bin
 tester: $(TESTER_TARGET) $(BIN)/tester/dmg_boot.bin $(BIN)/tester/cgb_boot.bin $(BIN)/tester/agb_boot.bin $(BIN)/tester/sgb_boot.bin $(BIN)/tester/sgb2_boot.bin
 all: cocoa sdl tester libretro
 
@@ -227,7 +227,8 @@ TESTER_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(TESTER_SOURCES))
 
 # Automatic dependency generation
 
-ifneq ($(filter-out clean bootroms libretro %.bin, $(MAKECMDGOALS)),)
+# ifneq ($(filter-out clean bootroms libretro %.bin, $(MAKECMDGOALS)),)
+ifneq ($(filter $(MAKECMDGOALS),libretro),)
 -include $(CORE_OBJECTS:.o=.dep)
 ifneq ($(filter $(MAKECMDGOALS),sdl),)
 -include $(SDL_OBJECTS:.o=.dep)
@@ -427,6 +428,8 @@ $(BIN)/BootROMs/%.bin: BootROMs/%.asm $(OBJ)/BootROMs/SameBoyLogo.pb12
 	rgblink -o $@.tmp2 $@.tmp
 	dd if=$@.tmp2 of=$@ count=1 bs=$(if $(findstring dmg,$@)$(findstring sgb,$@),256,2304) 2> $(NULL)
 	@rm $@.tmp $@.tmp2
+
+.SECONDARY:
 
 # Libretro Core (uses its own build system)
 libretro:

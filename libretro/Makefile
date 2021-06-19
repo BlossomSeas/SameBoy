@@ -351,6 +351,8 @@ endif
 $(CORE_DIR)/build/bin/BootROMs/%_boot.bin:
 	$(MAKE) -C $(CORE_DIR) $(patsubst $(CORE_DIR)/%,%,$@)
 
+.SECONDARY:
+
 $(TARGET): $(OBJECTS)
 	-@$(MKDIR) -p $(dir $@)
 ifeq ($(STATIC_LINKING), 1)

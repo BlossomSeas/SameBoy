@@ -21,6 +21,11 @@ SOURCES_C   := $(CORE_DIR)/Core/gb.c \
                $(CORE_DIR)/libretro/dmg_boot.c \
                $(CORE_DIR)/libretro/sgb_boot.c \
                $(CORE_DIR)/libretro/sgb2_boot.c \
+               $(CORE_DIR)/libretro/agb_fast_boot.c \
+               $(CORE_DIR)/libretro/cgb_fast_boot.c \
+               $(CORE_DIR)/libretro/dmg_fast_boot.c \
+               $(CORE_DIR)/libretro/sgb_fast_boot.c \
+               $(CORE_DIR)/libretro/sgb2_fast_boot.c \
                $(CORE_DIR)/libretro/libretro.c
 
 CFLAGS += -DGB_DISABLE_TIMEKEEPING -DGB_DISABLE_REWIND -DGB_DISABLE_DEBUGGER -DGB_DISABLE_CHEATS
