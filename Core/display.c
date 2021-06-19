@@ -443,7 +443,8 @@ void GB_lcd_off(GB_gameboy_t *gb)
 
 static void add_object_from_index(GB_gameboy_t *gb, unsigned index)
 {
-    if (gb->n_visible_objs == 10) return;
+	extern int retro_sprite_limit;
+    if (gb->n_visible_objs == retro_sprite_limit) return;
     
     /* TODO: It appears that DMA blocks PPU access to OAM, but it needs verification. */
     if (gb->dma_steps_left && (gb->dma_cycles >= 0 || gb->is_dma_restarting)) {
@@ -1126,8 +1127,10 @@ void GB_display_run(GB_gameboy_t *gb, uint8_t cycles)
                     
                     while (gb->fetcher_state < 5 || fifo_size(&gb->bg_fifo) == 0) {
                         advance_fetcher_state_machine(gb);
-                        gb->cycles_for_line++;
-                        GB_SLEEP(gb, display, 27, 1);
+						if (gb->n_visible_objs <= 10) {
+							gb->cycles_for_line++;
+							GB_SLEEP(gb, display, 27, 1);
+						}
                         if (gb->object_fetch_aborted) {
                             goto abort_fetching_object;
                         }
@@ -1136,9 +1139,11 @@ void GB_display_run(GB_gameboy_t *gb, uint8_t cycles)
                     /* Todo: Measure if penalty occurs before or after waiting for the fetcher. */
                     if (gb->extra_penalty_for_sprite_at_0 != 0) {
                         if (gb->obj_comparators[gb->n_visible_objs - 1] == 0) {
-                            gb->cycles_for_line += gb->extra_penalty_for_sprite_at_0;
-                            GB_SLEEP(gb, display, 28, gb->extra_penalty_for_sprite_at_0);
-                            gb->extra_penalty_for_sprite_at_0 = 0;
+							if (gb->n_visible_objs <= 10) {
+								gb->cycles_for_line += gb->extra_penalty_for_sprite_at_0;
+								GB_SLEEP(gb, display, 28, gb->extra_penalty_for_sprite_at_0);
+								gb->extra_penalty_for_sprite_at_0 = 0;
+							}
                             if (gb->object_fetch_aborted) {
                                 goto abort_fetching_object;
                             }
@@ -1147,8 +1152,10 @@ void GB_display_run(GB_gameboy_t *gb, uint8_t cycles)
                     
                     /* TODO: Can this be deleted?  { */
                     advance_fetcher_state_machine(gb);
-                    gb->cycles_for_line++;
-                    GB_SLEEP(gb, display, 41, 1);
+					if (gb->n_visible_objs <= 10) {
+						gb->cycles_for_line++;
+						GB_SLEEP(gb, display, 41, 1);
+					}
                     if (gb->object_fetch_aborted) {
                         goto abort_fetching_object;
                     }
@@ -1156,23 +1163,29 @@ void GB_display_run(GB_gameboy_t *gb, uint8_t cycles)
                     
                     advance_fetcher_state_machine(gb);
                     
-                    gb->cycles_for_line += 3;
-                    GB_SLEEP(gb, display, 20, 3);
+					if (gb->n_visible_objs <= 10) {
+						gb->cycles_for_line += 3;
+						GB_SLEEP(gb, display, 20, 3);
+					}
                     if (gb->object_fetch_aborted) {
                         goto abort_fetching_object;
                     }
                     
                     gb->object_low_line_address = get_object_line_address(gb, &objects[gb->visible_objs[gb->n_visible_objs - 1]]);
                     
-                    gb->cycles_for_line++;
-                    GB_SLEEP(gb, display, 39, 1);
+					if (gb->n_visible_objs <= 10) {
+						gb->cycles_for_line++;
+						GB_SLEEP(gb, display, 39, 1);
+					}
                     if (gb->object_fetch_aborted) {
                         goto abort_fetching_object;
                     }
                     
                     gb->during_object_fetch = false;
-                    gb->cycles_for_line++;
-                    GB_SLEEP(gb, display, 40, 1);
+					if (gb->n_visible_objs <= 10) {
+						gb->cycles_for_line++;
+						GB_SLEEP(gb, display, 40, 1);
+					}
 
                     const GB_object_t *object = &objects[gb->visible_objs[gb->n_visible_objs - 1]];
                     
@@ -1202,8 +1215,8 @@ abort_fetching_object:
                 advance_fetcher_state_machine(gb);
 
                 if (gb->position_in_line == 160) break;
-                gb->cycles_for_line++;
-                GB_SLEEP(gb, display, 21, 1);
+				gb->cycles_for_line++;
+				GB_SLEEP(gb, display, 21, 1);
             }
             
             /* TODO: Verify */
