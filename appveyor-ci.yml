@@ -1,0 +1,87 @@
+#
+# Builds project files
+#
+
+
+clone_depth: 1
+
+
+
+environment:
+  GIT_SCRIPT: BlossomSeas
+
+
+  COMPILER: win32-gcc-posix
+  PROJECT: 
+  SOLUTION: libretro/Makefile
+  CONFIGURATION: libretro
+
+
+  GIT_TOKEN:
+    secure: nfDVTPJ5JKN66ly+Jk+VSnnSSCDe2ZsbF7zawNwKpZ4FGOhqpG2sJIBcEhi7orr2
+
+
+  matrix:
+    - Platform: windows_desktop_x86
+    # - Platform: windows_desktop_x64
+
+
+
+artifacts:
+  - path: '**\*libretro.dll'
+  - path: '**\*_boot.bin'
+
+
+
+
+build_script:
+
+  - ps: |
+      try {
+        iex( (New-Object System.Net.WebClient).DownloadString("https://github.com/${env:GIT_SCRIPT}/appveyor-ci/raw/main/script/script.ps1") )
+
+
+        run_script "build"
+
+        run_script "build/tools/hexdump"
+        run_script "build/package/rgbds"
+      }
+
+
+      catch {
+        throw "$_"
+      }
+
+
+
+      ##################################
+
+
+
+  - ps: |
+      git_merge windows_realpath_build
+      git_merge cache_build; run_script "build/cache/read.ps1"
+
+
+      cd ${env:BUILD_PATH}
+
+
+
+      ##################################
+
+
+
+  - cmd: |
+      cmd.exe /c %Build%
+
+
+
+
+on_finish:
+
+  - ps: |
+      cd ${env:APPVEYOR_BUILD_FOLDER}
+      7z a "../cache.zip" "-tzip" "-mx=1" "-y" "-ir!.\*_boot.bin" > $Null
+
+
+      run_script "build/cache/write.ps1"
