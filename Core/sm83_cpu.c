@@ -1563,8 +1563,96 @@ static GB_opcode_t *opcodes[256] = {
     ld_a_da8,   pop_rr,     ld_a_dc,    di,         ill,        push_rr,    or_a_d8,    rst,        /* fX */
     ld_hl_sp_r8,ld_sp_hl,   ld_a_da16,  ei,         ill,        ill,        cp_a_d8,    rst,
 };
+
+static uint16_t bank_for_addr(GB_gameboy_t *gb, uint16_t addr)
+{
+    if (addr < 0x4000) {
+        return gb->mbc_rom0_bank;
+    }
+
+    if (addr < 0x8000) {
+        return gb->mbc_rom_bank;
+    }
+
+    if (addr < 0xD000) {
+        return 0;
+    }
+
+    if (addr < 0xE000) {
+        return gb->cgb_ram_bank;
+    }
+
+    return 0;
+}
+
+static void cpu_overclock(GB_gameboy_t *gb)
+{
+	extern int retro_overclock_count;
+	static int printer = 0;
+
+	if (retro_overclock_count >= 0)
+		return;
+
+
+	if (printer) {
+		printf("overclock [%d]\n", gb->current_line);
+	}
+
+
+
+	retro_overclock_count = -retro_overclock_count;
+
+	while (retro_overclock_count > 0) {
+		if (gb->hdma_on || gb->hdma_starting)
+			break;
+
+		if (gb->stopped || gb->halted)
+			break;
+
+		if (gb->ime && (gb->interrupt_enable & gb->io_registers[GB_IO_IF] & 0x1F))
+			break;
+
+
+		/* =========================================== */
+
+
+		if (printer) {
+			printf("[%d - %d - %d - %d %d] %X:%X\n",
+				printer, retro_overclock_count, gb->current_line,
+				gb->dma_steps_left || gb->dma_cycles >= 0 || gb->is_dma_restarting, gb->hdma_on,
+				bank_for_addr(gb, gb->pc), gb->pc);
+			fflush(stdout);
+		}
+
+
+		/* =========================================== */
+
+
+		gb->last_opcode_read = cycle_read_inc_oam_bug(gb, gb->pc++);
+		if (gb->halt_bug) {
+			gb->pc--;
+			gb->halt_bug = false;
+		}
+		opcodes[gb->last_opcode_read](gb, gb->last_opcode_read);
+
+		retro_overclock_count--;
+	}
+
+
+	retro_overclock_count = -retro_overclock_count;
+
+	gb->pending_cycles = 0;
+	//if (printer > 0) printer--;
+}
+
 void GB_cpu_run(GB_gameboy_t *gb)
 {
+#if 0
+	printf("[%d %d] %X:%X\n", gb->current_line, gb->hdma_on,
+	       bank_for_addr(gb, gb->pc), gb->pc);
+	fflush(stdout);
+#endif
+
     if (gb->hdma_on) {
         GB_advance_cycles(gb, 4);
         return;
@@ -1660,4 +1748,6 @@ void GB_cpu_run(GB_gameboy_t *gb)
         gb->hdma_on = true;
         gb->hdma_cycles = -8;
     }
+
+	cpu_overclock(gb);
 }

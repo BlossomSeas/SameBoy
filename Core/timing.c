@@ -345,8 +345,41 @@ static void GB_rtc_run(GB_gameboy_t *gb, uint8_t cycles)
 }
 
 
+static void GB_advance_cycles_overclock(GB_gameboy_t *gb, uint8_t cycles)
+{
+    // Affected by speed boost
+    gb->dma_cycles += cycles;
+
+    gb->debugger_ticks += cycles;
+
+    if (!gb->cgb_double_speed) {
+        cycles <<= 1;
+    }
+
+    if (!gb->cgb_double_speed) {
+        cycles <<= 1;
+    }
+    
+    // Not affected by speed boost
+    if (gb->io_registers[GB_IO_LCDC] & 0x80) {
+        gb->double_speed_alignment += cycles;
+    }
+    gb->hdma_cycles += cycles;
+
+    if (!gb->stopped) { // TODO: Verify what happens in STOP mode
+        GB_dma_run(gb);
+        GB_hdma_run(gb);
+    }
+}
+
 void GB_advance_cycles(GB_gameboy_t *gb, uint8_t cycles)
 {
+    extern int retro_overclock_count;
+    if (retro_overclock_count > 0) {
+		GB_advance_cycles_overclock(gb, cycles);
+        return;
+	}
+
     gb->apu.pcm_mask[0] = gb->apu.pcm_mask[1] = 0xFF; // Sort of hacky, but too many cross-component interactions to do it right
     // Affected by speed boost
     gb->dma_cycles += cycles;
