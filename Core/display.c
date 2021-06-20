@@ -826,6 +826,9 @@ void GB_display_run(GB_gameboy_t *gb, uint8_t cycles)
         if (gb->cycles_in_stop_mode >= LCDC_PERIOD) {
             gb->cycles_in_stop_mode -= LCDC_PERIOD;
             display_vblank(gb);
+
+			extern void retro_set_display_overclock(int mode);
+			retro_set_display_overclock(1);
         }
         return;
     }
@@ -880,6 +883,9 @@ void GB_display_run(GB_gameboy_t *gb, uint8_t cycles)
             GB_SLEEP(gb, display, 1, LCDC_PERIOD);
             display_vblank(gb);
             gb->cgb_repeated_a_frame = true;
+
+			extern void retro_set_display_overclock(int mode);
+			retro_set_display_overclock(1);
         }
         return;
     }
@@ -1022,6 +1028,15 @@ void GB_display_run(GB_gameboy_t *gb, uint8_t cycles)
             gb->cgb_palettes_blocked = true;
             gb->cycles_for_line += 2;
             GB_SLEEP(gb, display, 32, 2);
+
+			if (gb->current_line == 0) {
+				extern void retro_set_display_overclock(int mode);
+				retro_set_display_overclock(1);
+			}
+
+			extern void retro_set_display_overclock(int mode);
+			retro_set_display_overclock(2);
+
         mode_3_start:
             /* TODO: Timing seems incorrect, might need an access conflict handling. */
             if ((gb->io_registers[GB_IO_LCDC] & 0x20) &&
@@ -1355,6 +1370,11 @@ abort_fetching_object:
             }
             
             GB_SLEEP(gb, display, 13, LINE_LENGTH - 5);
+
+			if (gb->current_line == VIRTUAL_LINES - 1) {
+				extern void retro_set_display_overclock(int mode);
+				retro_set_display_overclock(3);
+			}
         }
         
         /* TODO: Verified on SGB2 and CGB-E. Actual interrupt timings not tested. */
