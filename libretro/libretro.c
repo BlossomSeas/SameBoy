@@ -230,23 +230,27 @@ static uint32_t rgb_encode(GB_gameboy_t *gb, uint8_t r, uint8_t g, uint8_t b)
 
 static retro_environment_t environ_cb;
 
+#include "retro_vars.c"
+
 /* variables for single cart mode */
-static const struct retro_variable vars_single[] = {
+static struct retro_variable vars_single[] = {
     { "sameboy_color_correction_mode", "Color correction; emulate hardware|preserve brightness|reduce contrast|off|correct curves" },
     { "sameboy_high_pass_filter_mode", "High-pass filter; accurate|remove dc offset|off" },
     { "sameboy_model", "Emulated model (Restart game); Auto|Game Boy|Game Boy Color|Game Boy Advance|Super Game Boy|Super Game Boy 2" },
     { "sameboy_border", "Display border; Super Game Boy only|always|never" },
+#include "retro_dummy_option.h"
     { "sameboy_rumble", "Enable rumble; rumble-enabled games|all games|never" },
     { "sameboy_rtc", "Real Time Clock emulation; sync to system clock|accurate" },
     { NULL }
 };
 
 /* variables for dual cart dual gameboy mode */
-static const struct retro_variable vars_dual[] = {
+static struct retro_variable vars_dual[] = {
     { "sameboy_link", "Link cable emulation; enabled|disabled" },
     /*{ "sameboy_ir",   "Infrared Sensor Emulation; disabled|enabled" },*/
     { "sameboy_screen_layout", "Screen layout; top-down|left-right" },
     { "sameboy_audio_output", "Audio output; Game Boy #1|Game Boy #2" },
+#include "retro_dummy_option.h"
     { "sameboy_model_1", "Emulated model for Game Boy #1 (Restart game); Auto|Game Boy|Game Boy Color|Game Boy Advance" },
     { "sameboy_model_2", "Emulated model for Game Boy #2 (Restart game); Auto|Game Boy|Game Boy Color|Game Boy Advance" },
     { "sameboy_color_correction_mode_1", "Color correction for Game Boy #1; emulate hardware|preserve brightness|reduce contrast|off|correct curves" },
@@ -561,6 +565,9 @@ static void init_for_current_model(unsigned id)
 static void check_variables()
 {
     struct retro_variable var = {0};
+
+	retro_getvars_front();
+
     if (emulated_devices == 1) { 
         var.key = "sameboy_color_correction_mode";
         var.value = NULL;
@@ -859,6 +866,8 @@ static void check_variables()
             }
         }
     }
+
+	retro_getvars_back();
 }
 
 void retro_init(void)
@@ -1085,7 +1094,9 @@ void retro_run(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void *)vars_single);
+	retro_setvars_normal(vars_single);
+
+    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void *)retro_vars_build);
     check_variables();
 
     frame_buf = (uint32_t *)malloc(MAX_VIDEO_PIXELS * emulated_devices * sizeof(uint32_t));
@@ -1148,7 +1159,9 @@ bool retro_load_game_special(unsigned type, const struct retro_game_info *info, 
         return false; /* all other types are unhandled for now */
     }
 
-    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void *)vars_dual);
+	retro_setvars_special(vars_dual);
+
+    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void *)retro_vars_build);
     check_variables();
 
     frame_buf = (uint32_t*)malloc(emulated_devices * MAX_VIDEO_PIXELS * sizeof(uint32_t));
