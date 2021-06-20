@@ -601,6 +601,11 @@ static void render_boot_animation (GB_gameboy_t *gb)
 static void render_jingle(GB_gameboy_t *gb, size_t count);
 void GB_sgb_render(GB_gameboy_t *gb)
 {
+	extern int retro_fast_boot;
+	if (retro_fast_boot) {
+		gb->sgb->intro_animation = GB_SGB_INTRO_ANIMATION_LENGTH;
+	}
+
     if (gb->apu_output.sample_rate) {
         render_jingle(gb, gb->apu_output.sample_rate / GB_get_usual_frame_rate(gb));
     }

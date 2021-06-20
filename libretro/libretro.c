@@ -417,6 +417,35 @@ static void boot_rom_load(GB_gameboy_t *gb, GB_boot_rom_t type)
     log_cb(RETRO_LOG_INFO, "Loading boot image: %s\n", buf);
 
     if (GB_load_boot_rom(gb, buf)) {
+		if (retro_fast_boot) {
+			extern const unsigned char dmg_fast_boot[], cgb_fast_boot[], agb_fast_boot[], sgb_fast_boot[], sgb2_fast_boot[];
+			extern const unsigned dmg_fast_boot_length, cgb_fast_boot_length, agb_fast_boot_length, sgb_fast_boot_length, sgb2_fast_boot_length;
+
+			if (type == GB_BOOT_ROM_DMG) {
+				boot_code = (const unsigned char *) dmg_fast_boot;
+				boot_length = dmg_fast_boot_length;
+			}
+
+			else if (type == GB_BOOT_ROM_CGB) {
+				boot_code = (const unsigned char *) cgb_fast_boot;
+				boot_length = cgb_fast_boot_length;
+			}
+
+			else if (type == GB_BOOT_ROM_AGB) {
+				boot_code = (const unsigned char *) agb_fast_boot;
+				boot_length = agb_fast_boot_length;
+			}
+
+			else if (type == GB_BOOT_ROM_SGB) {
+				boot_code = (const unsigned char *) sgb_fast_boot;
+				boot_length = sgb_fast_boot_length;
+			}
+			else if (type == GB_BOOT_ROM_SGB2) {
+				boot_code = (const unsigned char *) sgb2_fast_boot;
+				boot_length = sgb2_fast_boot_length;
+			}
+		}
+
         GB_load_boot_rom_from_buffer(gb, boot_code, boot_length);
     }
 }
