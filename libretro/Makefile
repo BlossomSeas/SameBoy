@@ -329,6 +329,9 @@ else
 endif
 else
 	LD = $(CC)
+
+	CFLAGS += -MMD -MP
+	CXXFLAGS += -MMD -MP
 endif
 
 CFLAGS   += -D__LIBRETRO__ $(fpic) $(INCFLAGS) -std=gnu11 -D_GNU_SOURCE -D_USE_MATH_DEFINES
@@ -369,5 +372,7 @@ $(CORE_DIR)/build/obj/%_libretro.c.o: $(CORE_DIR)/%.c
 clean:
 	rm -f $(OBJECTS) $(TARGET)
 
+.SECONDARY:
 .PHONY: clean
 
+-include $(OBJECTS:%.o=%.d)
