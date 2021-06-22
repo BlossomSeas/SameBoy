@@ -251,6 +251,36 @@ static inline uint8_t scale_channel_with_curve_sgb(uint8_t x)
     return (uint8_t[]){0,2,5,9,15,20,27,34,42,50,58,67,76,85,94,104,114,123,133,143,153,163,173,182,192,202,211,220,229,238,247,255}[x];
 }
 
+static uint8_t color_correction_gbc_mix_rgb[32];
+static uint8_t color_correction_gbc_mix_sgb[32];
+static uint8_t color_correction_gbc_mix_gba[32];
+
+static inline uint8_t scale_channel_with_curve_gbc_mix_rgb(uint8_t x)
+{
+    return color_correction_gbc_mix_rgb[x];
+}
+
+static inline uint8_t scale_channel_with_curve_gbc_mix_sgb(uint8_t x)
+{
+    return color_correction_gbc_mix_sgb[x];
+}
+
+static inline uint8_t scale_channel_with_curve_gbc_mix_gba(uint8_t x)
+{
+    return color_correction_gbc_mix_gba[x];
+}
+
+void scale_channel_with_curve_mix(int scale)
+{
+	for (uint8_t lcv = 0; lcv < 32; lcv++) {
+		int gbc_mix = scale_channel_with_curve(lcv) * scale;
+
+		color_correction_gbc_mix_rgb[lcv] = (gbc_mix + scale_channel(lcv) * (100 - scale)) / 100;
+		color_correction_gbc_mix_sgb[lcv] = (gbc_mix + scale_channel_with_curve_sgb(lcv) * (100 - scale)) / 100;
+		color_correction_gbc_mix_gba[lcv] = (gbc_mix + scale_channel_with_curve_agb(lcv) * (100 - scale)) / 100;
+	}
+}
+
 
 uint32_t GB_convert_rgb15(GB_gameboy_t *gb, uint16_t color, bool for_border)
 {
@@ -262,6 +292,36 @@ uint32_t GB_convert_rgb15(GB_gameboy_t *gb, uint16_t color, bool for_border)
         r = scale_channel(r);
         g = scale_channel(g);
         b = scale_channel(b);
+    }
+    else if (gb->color_correction_mode == GB_COLOR_CORRECTION_GBC) {
+        r = scale_channel_with_curve(r);
+        g = scale_channel_with_curve(g);
+        b = scale_channel_with_curve(b);
+    }
+    else if (gb->color_correction_mode == GB_COLOR_CORRECTION_SGB) {
+        r = scale_channel_with_curve_sgb(r);
+        g = scale_channel_with_curve_sgb(g);
+        b = scale_channel_with_curve_sgb(b);
+    }
+    else if (gb->color_correction_mode == GB_COLOR_CORRECTION_GBA) {
+        r = scale_channel_with_curve_agb(r);
+        g = scale_channel_with_curve_agb(g);
+        b = scale_channel_with_curve_agb(b);
+    }
+    else if (gb->color_correction_mode == GB_COLOR_CORRECTION_GBC_MIX_RGB) {
+        r = scale_channel_with_curve_gbc_mix_rgb(r);
+        g = scale_channel_with_curve_gbc_mix_rgb(g);
+        b = scale_channel_with_curve_gbc_mix_rgb(b);
+    }
+    else if (gb->color_correction_mode == GB_COLOR_CORRECTION_GBC_MIX_SGB) {
+        r = scale_channel_with_curve_gbc_mix_sgb(r);
+        g = scale_channel_with_curve_gbc_mix_sgb(g);
+        b = scale_channel_with_curve_gbc_mix_sgb(b);
+    }
+    else if (gb->color_correction_mode == GB_COLOR_CORRECTION_GBC_MIX_GBA) {
+        r = scale_channel_with_curve_gbc_mix_gba(r);
+        g = scale_channel_with_curve_gbc_mix_gba(g);
+        b = scale_channel_with_curve_gbc_mix_gba(b);
     }
     else if (GB_is_sgb(gb) || for_border) {
         r = scale_channel_with_curve_sgb(r);
