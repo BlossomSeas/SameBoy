@@ -173,7 +173,8 @@ static void audio_callback(GB_gameboy_t *gb, GB_sample_t *sample)
 {
     if ((audio_out == GB_1 && gb == &gameboy[0]) ||
         (audio_out == GB_2 && gb == &gameboy[1])) {
-            audio_sample_cb(sample->left, sample->right);
+			extern int retro_master_volume;
+			audio_sample_cb((sample->left * retro_master_volume) / 100, (sample->right * retro_master_volume) / 100);
     }
 }
 
