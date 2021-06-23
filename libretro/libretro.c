@@ -177,9 +177,11 @@ static void audio_callback(GB_gameboy_t *gb, GB_sample_t *sample)
     }
 }
 
+static void retro_input_lag_vblank();
 static void vblank1(GB_gameboy_t *gb)
 {
     vblank1_occurred = true;
+    retro_input_lag_vblank();
 }
 
 static void vblank2(GB_gameboy_t *gb)
