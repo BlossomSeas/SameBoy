@@ -379,8 +379,8 @@ static uint8_t read_high_memory(GB_gameboy_t *gb, uint16_t addr)
                 return ((gb->apu.is_active[GB_NOISE] ? (gb->apu.samples[GB_NOISE] << 4) : 0) |
                         (gb->apu.is_active[GB_WAVE] ? (gb->apu.samples[GB_WAVE]) : 0))  & (gb->model <= GB_MODEL_CGB_C? gb->apu.pcm_mask[1] : 0xFF);
             case GB_IO_JOYP:
-				extern void retro_input_lag_write(GB_gameboy_t *gb);
-				retro_input_lag_write(gb);
+				extern void retro_game_lag_write(GB_gameboy_t *gb);
+				retro_game_lag_write(gb);
 
                 GB_timing_sync(gb);
             case GB_IO_TMA:
@@ -996,8 +996,8 @@ static void write_high_memory(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
                     }
                     GB_timing_sync(gb);
 
-			extern void retro_input_lag_reset();
-        		retro_input_lag_reset();
+				extern void retro_game_lag_reset();
+        		retro_game_lag_reset();
                 }
                 else if (!(value & 0x80) && (gb->io_registers[GB_IO_LCDC] & 0x80)) {
                     /* Sync after turning off LCD */
@@ -1005,8 +1005,8 @@ static void write_high_memory(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
                     GB_timing_sync(gb);
                     GB_lcd_off(gb);
 
-			extern void retro_input_lag_reset();
-        		retro_input_lag_reset();
+				extern void retro_game_lag_reset();
+        		retro_game_lag_reset();
                 }
                 /* Handle disabling objects while already fetching an object */
                 if ((gb->io_registers[GB_IO_LCDC] & 2) && !(value & 2)) {
