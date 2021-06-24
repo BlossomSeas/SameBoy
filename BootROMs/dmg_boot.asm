@@ -27,7 +27,6 @@ Start:
     ld a, $54
     ldh [$47], a
 
-IF !DEF(FAST)
 ; Load logo from ROM.
 ; A nibble represents a 4-pixels line, 2 bytes represent a 4x4 tile, scaled to 8x8.
 ; Tiles are ordered left to right, top to bottom.
@@ -69,7 +68,6 @@ IF !DEF(FAST)
     ld l,$0f ; Jump to top row
     jr .tilemapLoop
 .tilemapDone
-ENDC
 
     ld a, 30
     ldh [$ff42], a
