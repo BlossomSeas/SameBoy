@@ -8,15 +8,13 @@ clone_depth: 1
 
 
 environment:
-  GIT_SCRIPT: BlossomSeas
-
-
   COMPILER: win32-gcc-posix
   PROJECT: 
   SOLUTION: libretro/Makefile
   CONFIGURATION: libretro
 
 
+  GIT_SCRIPT: BlossomSeas
   GIT_TOKEN:
     secure: nfDVTPJ5JKN66ly+Jk+VSnnSSCDe2ZsbF7zawNwKpZ4FGOhqpG2sJIBcEhi7orr2
 
